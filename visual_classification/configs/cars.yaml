@@ -1,0 +1,15 @@
+_BASE_: "./base.yaml"
+RUN_N_TIMES: 999
+DATA:
+  NAME: "StanfordCars"
+  DATAPATH: ""  #TODO: need to specify here
+  NUMBER_CLASSES: 196
+  MULTILABEL: False
+MODEL:
+  TYPE: "vit"
+  LORA_LAYER: [False, True, True]
+  LORA_MLP: False
+SOLVER:
+  BASE_LR: 0.001
+  WEIGHT_DECAY: 0.0001
+SEED: None

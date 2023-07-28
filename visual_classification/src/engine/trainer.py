@@ -294,7 +294,7 @@ class Trainer():
                 break
 
         # if save_best_test:
-            if epoch%9==0:
+            if epoch%33==0:
                 self.save_model_ckpt(self.model_copy, best_test_epoch)
         # else:
         self.save_model_ckpt(self.model, total_epoch)

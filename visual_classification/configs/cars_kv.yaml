@@ -7,7 +7,7 @@ DATA:
   MULTILABEL: False
 MODEL:
   TYPE: "vit"
-  LORA_LAYER: [True, True,True ]
+  LORA_LAYER: [False, True,True ]
   LORA_MLP: False
   LORA_O: False
 SOLVER:

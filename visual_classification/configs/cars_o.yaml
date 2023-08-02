@@ -7,9 +7,9 @@ DATA:
   MULTILABEL: False
 MODEL:
   TYPE: "vit"
-  LORA_LAYER: [True, True,True ]
+  LORA_LAYER: [False, False,False ]
   LORA_MLP: False
-  LORA_O: False
+  LORA_O: True
 SOLVER:
   BASE_LR: 0.001
   WEIGHT_DECAY: 0.0001

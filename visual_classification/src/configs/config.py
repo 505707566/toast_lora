@@ -41,6 +41,7 @@ _C.MODEL.SAVE_MODEL_CKPT = False
 _C.MODEL.LORA_LAYER=[True, True, True]
 _C.MODEL.LORA_MLP= False
 _C.MODEL.LORA_O= False
+_C.MODEL.LORA_RANK= 4
 _C.MODEL.MODEL_ROOT = ""  # root folder for pretrained model weights
 
 _C.MODEL.TYPE = "vit"

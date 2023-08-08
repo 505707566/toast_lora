@@ -32,8 +32,8 @@ MODEL:
     NUM_TOKENS: 100
     DROPOUT: 0.1
   SAVE_MODEL_CKPT: True
-  LORA_LAYER: [True, True,True ]
-  LORA_MLP: False
+  LORA_LAYER: [False, False,False ]
+  LORA_MLP: True
   LORA_O: False
   LORA_RANK: 4
 SOLVER:

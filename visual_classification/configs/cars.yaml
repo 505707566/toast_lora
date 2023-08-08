@@ -10,7 +10,7 @@ MODEL:
   LORA_LAYER: [True, True,True ]
   LORA_MLP: False
   LORA_O: False
-  LORA_RANK: 2
+  LORA_RANK: 4
 SOLVER:
   BASE_LR: 0.001
   WEIGHT_DECAY: 0.0001

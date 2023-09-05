@@ -112,7 +112,7 @@ _C.SOLVER.BIAS_MULTIPLIER = 1.              # for prompt + bias
 _C.SOLVER.WARMUP_EPOCH = 5
 _C.SOLVER.TOTAL_EPOCH = 30
 _C.SOLVER.LOG_EVERY_N = 1000
-
+_C.SOLVER.EPOCH_PERITER = 10
 
 _C.SOLVER.DBG_TRAINABLE = False # if True, will print the name of trainable params
 _C.SOLVER.PRIOR_DECAY = True # if False, no weight decay on global prior in top-down tuning

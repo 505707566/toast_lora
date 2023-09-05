@@ -19,7 +19,7 @@ import random
 
 from functools import partial
 
-from ..engine.evaluator import Evaluator
+from .evaluator import Evaluator
 from ..solver.lr_scheduler import make_scheduler
 from ..solver.optimizer import make_optimizer
 from ..solver.losses import build_loss
@@ -31,7 +31,7 @@ import numpy as np
 logger = logging.get_logger("visual_prompt")
 
 
-class Trainer():
+class Trainer_relora():
     """
     a trainer with below logics:
 
@@ -56,26 +56,22 @@ class Trainer():
         self.scheduler = make_scheduler(self.optimizer, cfg.SOLVER)
         self.cls_criterion = build_loss(self.cfg)
 
-        # self.optimizer2 = make_optimizer([self.model], cfg.SOLVER)
-        # self.scheduler2 = make_scheduler(self.optimizer, cfg.SOLVER)
+        self.optimizer2 = make_optimizer([self.model], cfg.SOLVER)
+        self.scheduler2 = make_scheduler(self.optimizer, cfg.SOLVER)
 
 
-        # self.optimizer3 = make_optimizer([self.model], cfg.SOLVER)
-        # self.scheduler3 = make_scheduler(self.optimizer, cfg.SOLVER)
-        # self.optimizer4 = make_optimizer([self.model], cfg.SOLVER)
-        # self.scheduler4 = make_scheduler(self.optimizer, cfg.SOLVER)
-        # self.optimizer5 = make_optimizer([self.model], cfg.SOLVER)
-        # self.scheduler5 = make_scheduler(self.optimizer, cfg.SOLVER)
-        # self.optimizer6 = make_optimizer([self.model], cfg.SOLVER)
-        # self.scheduler6 = make_scheduler(self.optimizer, cfg.SOLVER)
-        # self.optimizer7 = make_optimizer([self.model], cfg.SOLVER)
-        # self.scheduler7 = make_scheduler(self.optimizer, cfg.SOLVER)
-        # self.optimizer8 = make_optimizer([self.model], cfg.SOLVER)
-        # self.scheduler8 = make_scheduler(self.optimizer, cfg.SOLVER)
-        # self.optimizer9 = make_optimizer([self.model], cfg.SOLVER)
-        # self.scheduler9 = make_scheduler(self.optimizer, cfg.SOLVER)
-        # self.optimizer10 = make_optimizer([self.model], cfg.SOLVER)
-        # self.scheduler10 = make_scheduler(self.optimizer, cfg.SOLVER)
+        self.optimizer3 = make_optimizer([self.model], cfg.SOLVER)
+        self.scheduler3 = make_scheduler(self.optimizer, cfg.SOLVER)
+        self.optimizer4 = make_optimizer([self.model], cfg.SOLVER)
+        self.scheduler4 = make_scheduler(self.optimizer, cfg.SOLVER)
+        self.optimizer5 = make_optimizer([self.model], cfg.SOLVER)
+        self.scheduler5 = make_scheduler(self.optimizer, cfg.SOLVER)
+        self.optimizer6 = make_optimizer([self.model], cfg.SOLVER)
+        self.scheduler6 = make_scheduler(self.optimizer, cfg.SOLVER)
+        self.optimizer7 = make_optimizer([self.model], cfg.SOLVER)
+        self.scheduler7 = make_scheduler(self.optimizer, cfg.SOLVER)
+        self.optimizer8 = make_optimizer([self.model], cfg.SOLVER)
+        self.scheduler8 = make_scheduler(self.optimizer, cfg.SOLVER)
         self.checkpointer = Checkpointer(
             self.model,
             save_dir=cfg.OUTPUT_DIR,
@@ -211,7 +207,6 @@ class Trainer():
         best_metric = 0
         log_interval = self.cfg.SOLVER.LOG_EVERY_N
 
-        epoch_periter=self.cfg.SOLVER.EPOCH_PERITER
         losses = AverageMeter('Loss', ':.4e')
         batch_time = AverageMeter('Time', ':6.3f')
         data_time = AverageMeter('Data', ':6.3f')
@@ -233,18 +228,10 @@ class Trainer():
         #     param.requires_grad = False
         # for param in self.model.block.attn.lora3.parameters():
         #     param.requires_grad = False
-        rank=4
+        
         # loras = [block.attn.qkv.lora1 for block in self.model.enc.blocks if hasattr(block.attn.qkv, 'lora1')] + \
         # [block.attn.qkv.lora2 for block in self.model.enc.blocks if hasattr(block.attn.qkv, 'lora2')] + \
         # [block.attn.qkv.lora3 for block in self.model.enc.blocks if hasattr(block.attn.qkv, 'lora3')]
-        seed=0
-        torch.manual_seed(seed)
-        np.random.seed(seed)
-        random.seed(seed)
-        torch.cuda.manual_seed_all(seed)
-        print("set seed=")
-        print(seed)
-        seed+=1
         for epoch in range(total_epoch):
             # reset averagemeters to measure per-epoch results
 
@@ -252,257 +239,131 @@ class Trainer():
                 
             #     # 重新初始化
                 # init_lora(self.model) 
-            # if epoch ==seed*epoch_periter:
-            #     seed+=1
-            #     # set LoRA layer
-            #     # for block in self.model.enc.blocks:
-            #         # block.attn.qkv = lora.Linear(self.model.enc.embed_dim, self.model.enc.embed_dim*3, r=4).cuda()
-            #         # lora.mark_only_lora_as_trainable(block.attn.qkv)
-            #         # for param in block.attn.lora2.parameters():
-            #         #     param.requires_grad = False
-            #         # for param in block.attn.lora3.parameters():
-            #         #     param.requires_grad = False
+            if epoch ==0:
+                # set LoRA layer
+                # for block in self.model.enc.blocks:
+                    # block.attn.qkv = lora.Linear(self.model.enc.embed_dim, self.model.enc.embed_dim*3, r=4).cuda()
+                    # lora.mark_only_lora_as_trainable(block.attn.qkv)
+                    # for param in block.attn.lora2.parameters():
+                    #     param.requires_grad = False
+                    # for param in block.attn.lora3.parameters():
+                    #     param.requires_grad = False
                         
-            #     for name, param in self.model.named_parameters():
-            #         if param.requires_grad:
-            #             print(f"Epoch {epoch}, Parameter {name} requires gradient.")
+                for name, param in self.model.named_parameters():
+                    if param.requires_grad:
+                        print(f"Epoch {epoch}, Parameter {name} requires gradient.")
 
          
-            #     # 设置新种子
-            #     torch.manual_seed(seed)
-            #     np.random.seed(seed)
-            #     random.seed(seed)
-            #     torch.cuda.manual_seed_all(seed)
-            #     print("set seed=")
-            #     print(seed)
-            #     # block.attn.qkv.weight.data += block.attn.qkv.zero_pad(T(delta_w * block.attn.qkv.scaling))
-            #     # lora A[12x1024] lora b[3072x4] delta_w wight[3072, 1024]
-            if epoch ==total_epoch:
-                continue
-            print(seed)
-            if epoch ==seed*epoch_periter:
-                seed+=1
-                for block in self.model.enc.blocks:
-                    def T(w):
-                        return w.T if block.attn.qkv.fan_in_fan_out else w
+                # 设置新种子
+                torch.manual_seed(1)
+                np.random.seed(1)
+                random.seed(1)
+                torch.cuda.manual_seed_all(1)
+                print("set seed=")
+                print(1)
+                # block.attn.qkv.weight.data += block.attn.qkv.zero_pad(T(delta_w * block.attn.qkv.scaling))
+                # lora A[12x1024] lora b[3072x4] delta_w wight[3072, 1024]
+            if epoch ==15:
+                # for block in self.model.enc.blocks:
+                #     def T(w):
+                #         return w.T if block.attn.qkv.fan_in_fan_out else w
                     
                     
-                    if block.attn.qkv.r > 0:
-                        block.attn.qkv.weight.data += T(block.attn.qkv.lora_B @ block.attn.qkv.lora_A) * block.attn.qkv.scaling
-                    old_weight = block.attn.qkv.weight.data.cuda()
-                    old_bias = block.attn.qkv.bias.data.cuda()
-                    block.attn.qkv = lora.Linear(self.model.enc.embed_dim, self.model.enc.embed_dim*3, r=rank).cuda()
-                    block.attn.qkv.weight.data = old_weight.cuda()#用之前的weight初始化
-                    block.attn.qkv.bias.data = old_bias.cuda()
-                self.optimizer = make_optimizer([self.model], self.cfg.SOLVER)
-                self.scheduler = make_scheduler(self.optimizer, self.cfg.SOLVER)
+                #     if block.attn.qkv.r > 0:
+                #         block.attn.qkv.weight.data += T(block.attn.qkv.lora_B @ block.attn.qkv.lora_A) * block.attn.qkv.scaling
+                #     old_weight = block.attn.qkv.weight.data.cuda()
+                #     old_bias = block.attn.qkv.bias.data.cuda()
+                #     block.attn.qkv = lora.Linear(self.model.enc.embed_dim, self.model.enc.embed_dim*3, r=4).cuda()
+                #     block.attn.qkv.weight.data = old_weight.cuda()#用之前的weight初始化
+                #     block.attn.qkv.bias.data = old_bias.cuda()
+                self.model.enc.merge_and_reinit()
+                self.optimizer = self.optimizer2
+                self.scheduler = self.scheduler2
                 for name, param in self.model.named_parameters():
                     if param.requires_grad:
                         print(f"Epoch {epoch}, Parameter {name} requires gradient.")
                 
                 
                 # 设置新种子
-                torch.manual_seed(seed)
-                np.random.seed(seed)
-                random.seed(seed)
-                torch.cuda.manual_seed_all(seed)
+                torch.manual_seed(2)
+                np.random.seed(2)
+                random.seed(2)
+                torch.cuda.manual_seed_all(2)
                 print("set seed=")
-                print(seed)
+                print(2)
 
-            # if epoch==40:
-            #     seed+=1
-            #         # Merge the weights
-            #     for block in self.model.enc.blocks:
-            #         def T(w):
-            #             return w.T if block.attn.qkv.fan_in_fan_out else w
-                    
-                    
-            #         if block.attn.qkv.r > 0:
-            #             block.attn.qkv.weight.data += T(block.attn.qkv.lora_B @ block.attn.qkv.lora_A) * block.attn.qkv.scaling
-            #         old_weight = block.attn.qkv.weight.data.cuda()
-            #         old_bias = block.attn.qkv.bias.data.cuda()
-            #         block.attn.qkv = lora.Linear(self.model.enc.embed_dim, self.model.enc.embed_dim*3, r=rank).cuda()
-            #         block.attn.qkv.weight.data = old_weight.cuda()#用之前的weight初始化
-            #         block.attn.qkv.bias.data = old_bias.cuda()
-            #     self.optimizer = self.optimizer3
-            #     self.scheduler = self.scheduler3
-            #                     # 设置新种子
-            #     torch.manual_seed(seed)
-            #     np.random.seed(seed)
-            #     random.seed(seed)
-            #     torch.cuda.manual_seed_all(seed)
-            #     print("set seed=")
-            #     print(seed)
-            # if epoch==60:
-            #     seed+=1
-            #         # Merge the weights
-            #     for block in self.model.enc.blocks:
-            #         def T(w):
-            #             return w.T if block.attn.qkv.fan_in_fan_out else w
-                    
-                    
-            #         if block.attn.qkv.r > 0:
-            #             block.attn.qkv.weight.data += T(block.attn.qkv.lora_B @ block.attn.qkv.lora_A) * block.attn.qkv.scaling
-            #         old_weight = block.attn.qkv.weight.data.cuda()
-            #         old_bias = block.attn.qkv.bias.data.cuda()
-            #         block.attn.qkv = lora.Linear(self.model.enc.embed_dim, self.model.enc.embed_dim*3, r=rank).cuda()
-            #         block.attn.qkv.weight.data = old_weight.cuda()#用之前的weight初始化
-            #         block.attn.qkv.bias.data = old_bias.cuda()
-            #     self.optimizer = self.optimizer4
-            #     self.scheduler = self.scheduler4
-            #                     # 设置新种子
-            #     torch.manual_seed(seed)
-            #     np.random.seed(seed)
-            #     random.seed(seed)
-            #     torch.cuda.manual_seed_all(seed)
-            #     print("set seed=")
-            #     print(seed)
-            # if epoch==80:
-            #     seed+=1
-            #         # Merge the weights
-            #     for block in self.model.enc.blocks:
-            #         def T(w):
-            #             return w.T if block.attn.qkv.fan_in_fan_out else w
-                    
-                    
-            #         if block.attn.qkv.r > 0:
-            #             block.attn.qkv.weight.data += T(block.attn.qkv.lora_B @ block.attn.qkv.lora_A) * block.attn.qkv.scaling
-            #         old_weight = block.attn.qkv.weight.data.cuda()
-            #         old_bias = block.attn.qkv.bias.data.cuda()
-            #         block.attn.qkv = lora.Linear(self.model.enc.embed_dim, self.model.enc.embed_dim*3, r=rank).cuda()
-            #         block.attn.qkv.weight.data = old_weight.cuda()#用之前的weight初始化
-            #         block.attn.qkv.bias.data = old_bias.cuda()
-            #     self.optimizer = self.optimizer5
-            #     self.scheduler = self.scheduler5
-            #                     # 设置新种子
-            #     torch.manual_seed(seed)
-            #     np.random.seed(seed)
-            #     random.seed(seed)
-            #     torch.cuda.manual_seed_all(seed)
-            #     print("set seed=")
-            #     print(seed)
-            # if epoch==50:
-            #     seed+=1
-            #         # Merge the weights
-            #     for block in self.model.enc.blocks:
-            #         def T(w):
-            #             return w.T if block.attn.qkv.fan_in_fan_out else w
-                    
-                    
-            #         if block.attn.qkv.r > 0:
-            #             block.attn.qkv.weight.data += T(block.attn.qkv.lora_B @ block.attn.qkv.lora_A) * block.attn.qkv.scaling
-            #         old_weight = block.attn.qkv.weight.data.cuda()
-            #         old_bias = block.attn.qkv.bias.data.cuda()
-            #         block.attn.qkv = lora.Linear(self.model.enc.embed_dim, self.model.enc.embed_dim*3, r=rank).cuda()
-            #         block.attn.qkv.weight.data = old_weight.cuda()#用之前的weight初始化
-            #         block.attn.qkv.bias.data = old_bias.cuda()
-            #     self.optimizer = self.optimizer6
-            #     self.scheduler = self.scheduler6
-            #                     # 设置新种子
-            #     torch.manual_seed(seed)
-            #     np.random.seed(seed)
-            #     random.seed(seed)
-            #     torch.cuda.manual_seed_all(seed)
-            #     print("set seed=")
-            #     print(seed)
-            # if epoch==60:
-            #         # Merge the weights
-            #     for block in self.model.enc.blocks:
-            #         def T(w):
-            #             return w.T if block.attn.qkv.fan_in_fan_out else w
-                    
-                    
-            #         if block.attn.qkv.r > 0:
-            #             block.attn.qkv.weight.data += T(block.attn.qkv.lora_B @ block.attn.qkv.lora_A) * block.attn.qkv.scaling
-            #         old_weight = block.attn.qkv.weight.data.cuda()
-            #         old_bias = block.attn.qkv.bias.data.cuda()
-            #         block.attn.qkv = lora.Linear(self.model.enc.embed_dim, self.model.enc.embed_dim*3, r=rank).cuda()
-            #         block.attn.qkv.weight.data = old_weight.cuda()#用之前的weight初始化
-            #         block.attn.qkv.bias.data = old_bias.cuda()
-            #     self.optimizer = self.optimizer7
-            #     self.scheduler = self.scheduler7
-            #                     # 设置新种子
-            #     torch.manual_seed(seed)
-            #     np.random.seed(seed)
-            #     random.seed(seed)
-            #     torch.cuda.manual_seed_all(seed)
-            #     print("set seed=")
-            #     print(seed)
-            # if epoch==70:
-            #     seed+=1
-            #         # Merge the weights
-            #     for block in self.model.enc.blocks:
-            #         def T(w):
-            #             return w.T if block.attn.qkv.fan_in_fan_out else w
-                    
-                    
-            #         if block.attn.qkv.r > 0:
-            #             block.attn.qkv.weight.data += T(block.attn.qkv.lora_B @ block.attn.qkv.lora_A) * block.attn.qkv.scaling
-            #         old_weight = block.attn.qkv.weight.data.cuda()
-            #         old_bias = block.attn.qkv.bias.data.cuda()
-            #         block.attn.qkv = lora.Linear(self.model.enc.embed_dim, self.model.enc.embed_dim*3, r=rank).cuda()
-            #         block.attn.qkv.weight.data = old_weight.cuda()#用之前的weight初始化
-            #         block.attn.qkv.bias.data = old_bias.cuda()
-            #     self.optimizer = self.optimizer8
-            #     self.scheduler = self.scheduler8
-            #                     # 设置新种子
-            #     torch.manual_seed(seed)
-            #     np.random.seed(seed)
-            #     random.seed(seed)
-            #     torch.cuda.manual_seed_all(seed)
-            #     print("set seed=")
-            #     print(seed)
-            # if epoch==80:
-            #     seed+=1
-            #         # Merge the weights
-            #     for block in self.model.enc.blocks:
-            #         def T(w):
-            #             return w.T if block.attn.qkv.fan_in_fan_out else w
-                    
-                    
-            #         if block.attn.qkv.r > 0:
-            #             block.attn.qkv.weight.data += T(block.attn.qkv.lora_B @ block.attn.qkv.lora_A) * block.attn.qkv.scaling
-            #         old_weight = block.attn.qkv.weight.data.cuda()
-            #         old_bias = block.attn.qkv.bias.data.cuda()
-            #         block.attn.qkv = lora.Linear(self.model.enc.embed_dim, self.model.enc.embed_dim*3, r=rank).cuda()
-            #         block.attn.qkv.weight.data = old_weight.cuda()#用之前的weight初始化
-            #         block.attn.qkv.bias.data = old_bias.cuda()
-            #     self.optimizer = self.optimizer9
-            #     self.scheduler = self.scheduler9
-            #                     # 设置新种子
-            #     torch.manual_seed(seed)
-            #     np.random.seed(seed)
-            #     random.seed(seed)
-            #     torch.cuda.manual_seed_all(seed)
-            #     print("set seed=")
-            #     print(seed)
-            # if epoch==90:
-            #     seed+=1
-            #         # Merge the weights
-            #     for block in self.model.enc.blocks:
-            #         def T(w):
-            #             return w.T if block.attn.qkv.fan_in_fan_out else w
-                    
-                    
-            #         if block.attn.qkv.r > 0:
-            #             block.attn.qkv.weight.data += T(block.attn.qkv.lora_B @ block.attn.qkv.lora_A) * block.attn.qkv.scaling
-            #         old_weight = block.attn.qkv.weight.data.cuda()
-            #         old_bias = block.attn.qkv.bias.data.cuda()
-            #         block.attn.qkv = lora.Linear(self.model.enc.embed_dim, self.model.enc.embed_dim*3, r=rank).cuda()
-            #         block.attn.qkv.weight.data = old_weight.cuda()#用之前的weight初始化
-            #         block.attn.qkv.bias.data = old_bias.cuda()
-            #     self.optimizer = self.optimizer10
-            #     self.scheduler = self.scheduler10
-            #                     # 设置新种子
-            #     torch.manual_seed(seed)
-            #     np.random.seed(seed)
-            #     random.seed(seed)
-            #     torch.cuda.manual_seed_all(seed)
-            #     print("set seed=")
-            #     print(seed)    
-
-
-
+            if epoch==30:
+                    # Merge the weights
+                self.model.enc.merge_and_reinit()
+                self.optimizer = self.optimizer3
+                self.scheduler = self.scheduler3
+                                # 设置新种子
+                torch.manual_seed(3)
+                np.random.seed(3)
+                random.seed(3)
+                torch.cuda.manual_seed_all(3)
+                print("set seed=")
+                print(3)
+            if epoch==45:
+                    # Merge the weights
+                self.model.enc.merge_and_reinit()
+                self.optimizer = self.optimizer4
+                self.scheduler = self.scheduler4
+                                # 设置新种子
+                torch.manual_seed(4)
+                np.random.seed(4)
+                random.seed(4)
+                torch.cuda.manual_seed_all(4)
+                print("set seed=")
+                print(4)
+            if epoch==60:
+                    # Merge the weights
+                self.model.enc.merge_and_reinit()
+                self.optimizer = self.optimizer5
+                self.scheduler = self.scheduler5
+                                # 设置新种子
+                torch.manual_seed(5)
+                np.random.seed(5)
+                random.seed(5)
+                torch.cuda.manual_seed_all(5)
+                print("set seed=")
+                print(5)
+            if epoch==75:
+                    # Merge the weights
+                self.model.enc.merge_and_reinit()
+                self.optimizer = self.optimizer6
+                self.scheduler = self.scheduler6
+                                # 设置新种子
+                torch.manual_seed(6)
+                np.random.seed(6)
+                random.seed(6)
+                torch.cuda.manual_seed_all(6)
+                print("set seed=")
+                print(6)
+            if epoch==90:
+                    # Merge the weights
+                self.model.enc.merge_and_reinit()
+                self.optimizer = self.optimizer7
+                self.scheduler = self.scheduler7
+                                # 设置新种子
+                torch.manual_seed(7)
+                np.random.seed(7)
+                random.seed(7)
+                torch.cuda.manual_seed_all(7)
+                print("set seed=")
+                print(7)
+            if epoch==105:
+                    # Merge the weights
+                self.model.enc.merge_and_reinit()
+                self.optimizer = self.optimizer8
+                self.scheduler = self.scheduler8
+                                # 设置新种子
+                torch.manual_seed(8)
+                np.random.seed(8)
+                random.seed(8)
+                torch.cuda.manual_seed_all(8)
+                print("set seed=")
+                print(8)
             # for name, param in self.model.named_parameters():
             #     if param.grad is not None:
             #         print(f"Epoch {epoch}, Parameter {name}")

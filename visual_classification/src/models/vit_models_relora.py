@@ -77,9 +77,9 @@ class Topdown_ViTClass(nn.Module):
         return x, visualizations
 
 
-class Bottomup_ViTClass(nn.Module):
+class Bottomup_ViTClass_relora(nn.Module):
     def __init__(self, cfg, load_pretrain=True, vis=False):
-        super(Bottomup_ViTClass, self).__init__()
+        super(Bottomup_ViTClass_relora, self).__init__()
         if "prompt" in cfg.MODEL.TRANSFER_TYPE:
             print("prompt config loaded! ")
             prompt_cfg = cfg.MODEL.PROMPT
@@ -119,44 +119,38 @@ class Bottomup_ViTClass(nn.Module):
             target_modules_list = ["attn", "mlp"]  
             if isinstance(target_modules_list, str):
                 target_modules_list = [target_modules_list]  
-            for block in self.enc.blocks:
-                if cfg.MODEL.LORA_MLP:
-                    old_fc1_weight= block.mlp.fc1.weight.data
-                    old_fc1_bias = block.mlp.fc1.bias.data
-                    block.mlp.fc1 = lora.Linear(self.enc.embed_dim, self.enc.embed_dim * self.enc.mlp_ratio, r=cfg.MODEL.LORA_RANK)
-                    block.mlp.fc1.weight.data = old_fc1_weight#用之前的weight初始化
-                    block.mlp.fc1.bias.data = old_fc1_bias
+            self.enc = ReLoRaModel(
+                self.enc,
+                r=4,
+                lora_alpha=1,
+                lora_dropout=0.,
+                target_modules=["attn", "mlp"],
+                trainable_scaling=False,
+                keep_original_weights=True,
+                lora_only=False,
+            )
+            train_ln=True
+            for name, param in self.enc.named_parameters():
+                # LLaMa: model.norm, model.layers.input_layernorm, model.layers.post_attention_layernorm
+                if train_ln and "norm" in name:
+                    param.requires_grad = True        
+                elif "lm_head" in name:
+                    param.requires_grad = True
+                elif "embed_tokens" in name:
+                    param.requires_grad = True
+                elif "bias" in name:
+                    param.requires_grad = True
+                elif "lora_" in name:
+                    param.requires_grad = True
+                else:
+                    param.requires_grad = False
 
-                    old_fc2_weight= block.mlp.fc2.weight.data
-                    old_fc2_bias = block.mlp.fc2.bias.data
-                    block.mlp.fc2 = lora.Linear(self.enc.embed_dim * self.enc.mlp_ratio,self.enc.embed_dim,  r=cfg.MODEL.LORA_RANK)
-                    block.mlp.fc2.weight.data = old_fc2_weight#用之前的weight初始化
-                    block.mlp.fc2.bias.data = old_fc2_bias
-                if cfg.MODEL.LORA_O:
-                    old_o_weight=block.attn.proj.weight.data
-                    old_0_bias = block.attn.proj.bias.data
-                    block.attn.proj = lora.Linear(self.enc.embed_dim, self.enc.embed_dim , r=cfg.MODEL.LORA_RANK)
-                    block.attn.proj.weight.data=old_o_weight
-                    block.attn.proj.bias.data=old_0_bias
+            params_after = sum(p.numel() for p in self.enc.parameters())
+            trainable_after = sum(p.numel() for p in self.enc.parameters() if p.requires_grad)
 
-                
-                #qkv apply lora
-                if True in cfg.MODEL.LORA_LAYER:
-                    old_weight = block.attn.qkv.weight.data
-                    old_bias = block.attn.qkv.bias.data
-                    # block.attn.qkv.lora1 = lora.Linear(self.enc.embed_dim, 3*self.enc.embed_dim, r=cfg.MODEL.LORA_RANK)
-                    # block.attn.qkv.lora2 = lora.Linear(self.enc.embed_dim, 3*self.enc.embed_dim, r=cfg.MODEL.LORA_RANK)
-                    # block.attn.qkv.lora3 = lora.Linear(self.enc.embed_dim, 3*self.enc.embed_dim, r=cfg.MODEL.LORA_RANK)
-                    block.attn.qkv = lora.Linear(self.enc.embed_dim, self.enc.embed_dim*3, r=4)
-                    
-                    block.attn.qkv.weight.data = old_weight#用之前的weight初始化
-                    block.attn.qkv.bias.data = old_bias
-                    
-                    
-            lora.mark_only_lora_as_trainable(self.enc)
             for name, param in self.named_parameters():
-                if param.requires_grad:
-                    print(f" Parameter {name} requires gradient.")
+                    if param.requires_grad:
+                        print(f" Parameter {name} requires gradient.")
         elif cfg.MODEL.TRANSFER_TYPE == "end2end":
             logger.info("Enable all parameters update during training")
         else:

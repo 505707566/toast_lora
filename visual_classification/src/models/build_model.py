@@ -7,6 +7,7 @@ import torch
 
 from .convnext import ConvNeXt_Bottom_Up, ConvNeXt_Top_Down
 from .vit_models import Bottomup_ViTClass, Topdown_ViTClass
+from .vit_models_relora import Bottomup_ViTClass_relora
 from ..utils import logging
 logger = logging.get_logger("visual_prompt")
 # Supported model types
@@ -15,6 +16,7 @@ _MODEL_TYPES = {
     "convnext_top_down": ConvNeXt_Top_Down,
     "vit_bottom_up": Bottomup_ViTClass,
     "vit_top_down": Topdown_ViTClass,
+    "vit_bottom_up_relora": Bottomup_ViTClass_relora,
 }
 
 

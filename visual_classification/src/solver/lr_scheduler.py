@@ -10,7 +10,7 @@ def make_scheduler(
     optimizer: optim.Optimizer, train_params: CfgNode
 ) -> LambdaLR:
     warmup = train_params.WARMUP_EPOCH
-    total_iters = train_params.TOTAL_EPOCH
+    total_iters = train_params.EPOCH_PERITER
 
     if train_params.SCHEDULER == "cosine":
         scheduler = WarmupCosineSchedule(
